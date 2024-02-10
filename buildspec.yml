@@ -1,0 +1,36 @@
+version: 0.2
+
+env:
+  parameter-store:
+     DOCKER_REGISTRY_USERNAME: /sample-python-project/docker-credentials/username
+     DOCKER_REGISTRY_PASSWORD: /sample-python-project/docker-credentials/password
+     DOCKER_REGISTRY_URL: /sample-python-project/docker-registry/url 
+  #secrets-manager:
+     # key: secret-id:json-key:version-stage:version-id
+     # key: secret-id:json-key:version-stage:version-id
+  #exported-variables:
+     # - variable
+     # - variable
+  #git-credential-helper: yes
+#batch:
+  #fast-fail: true
+  #build-list:
+  #build-matrix:
+  #build-graph:
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+      - pip install -r requirements.txt
+      # - command
+  build:
+    commands:
+      - echo "Building docker image"
+      - docker login -u "$DOCKER_REGISTRY_USERNAME" -p "$DOCKER_REGISTRY_PASSWORD"
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/sample-python-project:v2" .
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/sample-python-project:v2"
+  post_build:
+    commands:
+      - echo " Build is successful"
