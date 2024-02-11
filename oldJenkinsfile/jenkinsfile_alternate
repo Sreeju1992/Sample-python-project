@@ -1,0 +1,35 @@
+pipeline {
+   agent any
+   environment {
+      DATE = new Date().format('yy.M')
+      TAG = "${DATE}.${BUILD_NUMBER}"
+   }
+   stages {
+       stage('Code Checkout') {
+         steps {
+            // Checkout code from your repository
+            git 'https://github.com/Sreeju1992/Sample-python-project.git'
+         }
+       }
+       stage('Docker Build') {
+         steps {
+            script {
+                // Build docker image
+                docker.build("sreejith92/sample-python-project:${TAG}")
+            }
+         } 
+       }
+       stage('Docker Push') {
+         steps {
+             script {
+                // Push docker image to dockerhub
+                docker.withRegistry('https://registry.hub.docker.com', 'docker_credential') {
+                    docker.image("sreejith92/sample-python-project:${TAG}").push()
+                }
+             }
+         }
+
+       } 
+   }
+
+}
