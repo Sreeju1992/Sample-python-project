@@ -9,7 +9,7 @@ pipeline {
          stage('Code Checkout') {
             steps{
                 // Checkout code from repository
-                git 'https://github.com/Sreeju1992/Sample-python-project.git'
+                git branch: 'main', url: 'https://github.com/Sreeju1992/Sample-python-project.git'
             }
          }
          stage('Build Docker Image') {
