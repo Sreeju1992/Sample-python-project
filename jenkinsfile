@@ -1,9 +1,11 @@
 pipeline {
      agent any
      environment {
-           DATE = new Date().format('yy.M')
-           TAG = "${DATE}.${env.BUILD_NUMBER}"
-           IMAGE_NAME = "sreejith92/sample-python-project:${TAG}"
+           NAME = "sample-python-project"
+           VERSION = "${env.BUILD_ID}-${env.GIT_COMMIT}"
+           IMAGE_REPO = "sreejith92"
+           GITHUB_TOKEN = credentials('github-token')
+
      }
      stages{
          stage('Code Checkout') {
@@ -15,7 +17,8 @@ pipeline {
          stage('Build Docker Image') {
             steps{
                 // Docker image build
-                sh "docker build -t ${IMAGE_NAME} ."
+                sh "docker build -t ${NAME} ."
+                sh "docker tag ${NAME}:latest ${IMAGE_REPO}/${NAME}:${VERSION}"
             }
          }
          stage('Push Image to repository'){
@@ -25,9 +28,46 @@ pipeline {
                   sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                 }
                 // Push Docker image to dockerhub
-                sh "docker push ${IMAGE_NAME}"
+                sh "docker push ${IMAGE_REPO}/${NAME}:${VERSION}"
             }
-         }    
+         }
+         stage('Clone/Pull Repo')
+            steps{
+                script{
+                    if (fileExists('sample-python-project-manifests')) {
+                        echo "Cloned repo already exists. Pulling latest repo"
+
+                        dir("sample-python-project-manifests"){
+                            sh 'git pull'
+                        }
+                    }else{
+                        echo "Repo doesnot exist. Cloning the Repo"
+                        sh 'git clone -b feature https://github.com/Sreeju1992/sample-python-project-manifests.git'
+                    }
+                }
+            }
+         stage('Update Manifests')
+            steps{
+                dir("sample-python-project-manifests/manifests"){
+                    sh 'sed -i "s#sreejith92.*#${IMAGE_REPO}/${NAME}:${VERSION}#g" deployment.yaml'
+                    sh 'cat deployment.yaml'
+                }
+            }
+         stage('Commit and push the changes')
+            steps{
+                dir("sample-python-project-manifests/manifests"){
+                    sh "git config --global user.email 'jenkins@ci.com'"
+                    sh 'git remote set-url origin https://Sreeju1992:$GITHUB_TOKEN@github.com/Sreeju1992/sample-python-project-manifests.git'
+                    sh 'git checkout feature'
+                    sh 'git add -A'
+                    sh 'git commit -m "Upload Image version for Build - $VERSION"'
+                    sh 'git push origin feature'
+                }
+            }
+         stage('Raise PR')
+            steps{
+                sh 'gh pr create -a "@me" -B main -H feature -t "Changed Image version for Build - $VERSION" -b "Updated deployment specification with a new image version"'
+            }    
      }
 
 }
