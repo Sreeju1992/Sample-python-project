@@ -2,3 +2,10 @@ Git plugin
 Github
 Github API plugin
 docker pipeline plugin 
+
+Installation
+-----------
+
+Github CLI
+docker
+Add jenkins user to docker group
