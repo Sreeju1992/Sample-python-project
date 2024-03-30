@@ -8,3 +8,4 @@ Installation
 
 Github CLI
 docker
+Add jenkins user to docker group
