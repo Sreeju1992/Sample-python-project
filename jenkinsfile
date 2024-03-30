@@ -31,7 +31,7 @@ pipeline {
                 sh "docker push ${IMAGE_REPO}/${NAME}:${VERSION}"
             }
          }
-         stage('Clone/Pull Repo')
+         stage('Clone/Pull Repo'){
             steps{
                 script{
                     if (fileExists('sample-python-project-manifests')) {
@@ -46,14 +46,16 @@ pipeline {
                     }
                 }
             }
-         stage('Update Manifests')
+         }
+         stage('Update Manifests'){
             steps{
                 dir("sample-python-project-manifests/manifests"){
                     sh 'sed -i "s#sreejith92.*#${IMAGE_REPO}/${NAME}:${VERSION}#g" deployment.yaml'
                     sh 'cat deployment.yaml'
                 }
             }
-         stage('Commit and push the changes')
+         }
+         stage('Commit and push the changes'){
             steps{
                 dir("sample-python-project-manifests/manifests"){
                     sh "git config --global user.email 'jenkins@ci.com'"
@@ -64,10 +66,11 @@ pipeline {
                     sh 'git push origin feature'
                 }
             }
-         stage('Raise PR')
+         }
+         stage('Raise PR'){
             steps{
                 sh 'gh pr create -a "@me" -B main -H feature --title "Changed Image version for Build - $VERSION" -b "Updated deployment specification with a new image version"'
             }    
      }
-
+     }
 }
