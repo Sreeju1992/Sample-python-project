@@ -10,8 +10,5 @@ COPY . .
 # Install dependencies from requirements.txt file
 RUN pip install -r /app/requirements.txt
 
-# port to expose
-EXPOSE 5000
-
 # Command to run
 CMD ["python", "Simpleflask_app.py"]

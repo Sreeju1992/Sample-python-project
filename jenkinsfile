@@ -67,10 +67,6 @@ pipeline {
                 }
             }
          }
-         stage('Raise PR'){
-            steps{
-                sh 'gh pr create -a "@me" -B main -H feature --title "Changed Image version for Build - $VERSION" -b "Updated deployment specification with a new image version"'
-            }    
-     }
+         
      }
 }
